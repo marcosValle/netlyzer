@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/logo.png"/>
+</p>
+
 The main goal of this tool is to quickly analyze a pcap file in order to provide short metrics for the network and look for DDoS indicators. Also, it should be extensible as to allow for further development.
 
 # Install
