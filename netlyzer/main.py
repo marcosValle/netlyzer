@@ -9,6 +9,7 @@ from termcolor import colored
 
 class NetAnalysis:
     def __init__(self):
+        self.verbose = False
         self.totPkts = 0
         self.srcIP = []
         self.dstIP = []
@@ -20,6 +21,10 @@ class NetAnalysis:
 
     def procPkt(self, p):
         self.totPkts += 1
+
+        if self.verbose == True:
+            print(p.summary())
+
         if IP in p:
             self.srcIP.append(p[IP].src)
             self.dstIP.append(p[IP].dst)
@@ -44,9 +49,10 @@ class NetAnalysis:
 
 def parse():
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('--check', nargs='+', help='Check against extracted IPs and Domains against external API (vt or abuseipdb)')
-    parser.add_argument('--graph', help='Plot IP count graphs', action='store_true')
-    parser.add_argument('--filename', help='PCAP file to read from', required=True)
+    parser.add_argument('--check', '-c', nargs='+', help='Check against extracted IPs and Domains against external API (vt or abuseipdb)')
+    parser.add_argument('--graph', '-g', help='Plot IP count graphs', action='store_true')
+    parser.add_argument('--filename', '-f', help='PCAP file to read from', required=True)
+    parser.add_argument('--verbose', '-v', help='Shows packet reading verbosely', action='store_true')
     return parser
 
 def banner():
@@ -74,7 +80,10 @@ def banner():
     print(colored('=================================', 'green'))
     print(colored('[+] Reading capture file...', 'green'))
     print(colored('(Go grab a cup of coffee, this might take a while)', 'green'))
-   
+
+    if args.verbose:
+        net.verbose = True
+    
     packets = sniff(offline=args.filename, prn=net.procPkt, store=0)
 
     print(colored('[+] Done!', 'green'))
@@ -101,5 +110,3 @@ def banner():
         print(colored('[+] Plotting fancy graphs...', 'green'))
         viewIPCnt(net.count(net.srcIP))
         print(colored('=================================', 'green'))
-
-
