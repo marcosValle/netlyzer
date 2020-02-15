@@ -6,21 +6,35 @@ from netview import *
 from malchk import *
 import argparse
 from termcolor import colored
+from datetime import datetime
 
 class NetAnalysis:
     def __init__(self):
         self.verbose = False
-        self.totPkts = 0
+        self.protSummary = {
+                "DNS":{
+                    "firstPkt" : None,
+                    "lastPkt" : -1,
+                    "data" : 0,
+                    "bandwidth" : 0,
+                    "count" : 0
+                    },
+                "ICMP":{
+                    "firstPkt" : None,
+                    "lastPkt" : -1,
+                    "data" : 0,
+                    "bandwidth" : 0,
+                    "count" : 0
+                    }
+                }
+
         self.srcIP = []
         self.dstIP = []
         self.domains = []
-        self.protCnt = {
-                "DNS": 0,
-                "ICMP": 0,
-                }
+        self.totalPkts = 0
 
     def procPkt(self, p):
-        self.totPkts += 1
+        self.totalPkts += 1
 
         if self.verbose == True:
             print(p.summary())
@@ -30,13 +44,25 @@ class NetAnalysis:
             self.dstIP.append(p[IP].dst)
             
             if p.haslayer(DNS):
-                self.protCnt["DNS"] += 1
+                if self.protSummary["DNS"]["count"] == 0:
+                    self.protSummary["DNS"]["firstPkt"] = p.time
+
+                self.checkIfLastPkt(p, "DNS")
+                self.protSummary["DNS"]["count"] += 1
+                self.protSummary["DNS"]["data"] += len(p)
+
                 for x in range(p[DNS].ancount):
                     if p.haslayer(DNSRR):
                         self.domains.append(p[DNSRR][x].rrname)
 
         if p.haslayer("ICMP"):
-            self.protCnt["ICMP"] += 1
+            if self.protSummary["ICMP"]["count"] == 0:
+                self.protSummary["ICMP"]["firstPkt"] = p.time
+
+            self.checkIfLastPkt(p, "ICMP")
+
+            self.protSummary["ICMP"]["count"] += 1
+            self.protSummary["ICMP"]["data"] += len(p)
 
     def count(self, data):
         cnt = Counter()
@@ -46,6 +72,21 @@ class NetAnalysis:
 
     def mostActiveSrcIPs(self, ips, num):
         return [ip[0] for ip in self.count(ips).most_common(num)]
+
+    def checkIfLastPkt(self, p, layer):
+        if layer == "DNS" and p.haslayer(layer) and p.time > self.protSummary["DNS"]["lastPkt"]:
+            self.protSummary["DNS"]["lastPkt"] = p.time
+        if layer == "ICMP" and p.haslayer(layer) and p.time > self.protSummary["ICMP"]["lastPkt"]:
+            self.protSummary["ICMP"]["lastPkt"] = p.time
+
+    def getBandwidth(self, protocol):
+        if protocol == "DNS":
+            timeInterval = datetime.fromtimestamp(self.protSummary["DNS"]["lastPkt"]) - datetime.fromtimestamp(self.protSummary["DNS"]["firstPkt"])
+            return self.protSummary["DNS"]["data"]/timeInterval.total_seconds()
+        elif protocol == "ICMP":
+            timeInterval = datetime.fromtimestamp(self.protSummary["ICMP"]["lastPkt"]) - datetime.fromtimestamp(self.protSummary["ICMP"]["firstPkt"])
+            return self.protSummary["ICMP"]["data"]/timeInterval.total_seconds()
+
 
 def parse():
     parser = argparse.ArgumentParser(description='Process some integers.')
@@ -86,12 +127,15 @@ if __name__ == '__main__':
     
     packets = sniff(offline=args.filename, prn=net.procPkt, store=0)
 
+    net.protSummary["DNS"]["bandwidth"] = net.getBandwidth("DNS")
+    net.protSummary["ICMP"]["bandwidth"] = net.getBandwidth("ICMP")
+
     print(colored('[+] Done!', 'green'))
     print(colored('=================================', 'green'))
 
     print(colored('[+] Network summary:', 'green'))
-    #print('[+] Total packets: {}'.format(totPkts))
-    printProtocols(net.protCnt)
+
+    printProtocols(net.protSummary)
     printTable("Src IP", net.count(net.srcIP))
     printTable("Dst IP", net.count(net.dstIP))
     printTable("Domain", net.count(net.domains))
