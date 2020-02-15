@@ -42,7 +42,7 @@ def checkAbuseIP(ips):
     return checkedIPs
 
 def getApiKey(provider):
-    with open("/opt/netlyzer/***REMOVED***", 'r') as ymlfile:
+    with open("/opt/netlyzer/config.yml", 'r') as ymlfile:
         cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
         if provider == "vt":
             return cfg['api']['vtApiKey']
