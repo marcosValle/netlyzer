@@ -1,0 +1,3 @@
+api:
+    vtApiKey: "<YOUR VT API KEY>"
+    abuseIPDBKey: "<YOUR ABUSEIPDBKEY KEY>"
