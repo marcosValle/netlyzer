@@ -70,7 +70,7 @@ def banner():
 * marcosvalle@protonmail.com           *
 ****************************************""")
 
-***REMOVED***
+if __name__ == '__main__':
     banner()
     parser = parse()
     args = parser.parse_args()
