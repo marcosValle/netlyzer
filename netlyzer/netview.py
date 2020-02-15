@@ -22,10 +22,10 @@ def printTable(column, cnt):
         table.add_row([col, count])
     print(table)
 
-def printProtocols(protCnt):
-    table = PrettyTable(["Protocol", "Count"])
-    for prot, count in protCnt.items():
-        table.add_row([prot, count])
+def printProtocols(protSummary):
+    table = PrettyTable(["Protocol", "Pkt Count", "Traffic (B)", "Bandwidth (Bps"])
+    for prot, desc in protSummary.items():
+        table.add_row([prot, desc["count"], desc["data"], desc["bandwidth"]])
     print(table)
 
 def printDomainsChk(scans):
