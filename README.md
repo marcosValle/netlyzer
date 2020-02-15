@@ -13,7 +13,7 @@ pipenv shell
 python netlyzer/main.py -h
 ```
 
-Please remember to insert your API keys into the `***REMOVED***` file.
+Please remember to insert your API keys into the `config.yml` file.
 
 # Usage
 
