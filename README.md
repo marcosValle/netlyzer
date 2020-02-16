@@ -2,7 +2,7 @@
   <img src="docs/logo.png"/>
 </p>
 
-The main goal of this tool is to quickly analyze a pcap file in order to provide short metrics for the network and look for DDoS indicators. Also, it should be extensible as to allow for further development.
+The main goal of this tool is to quickly analyze a pcap file in order to provide short metrics for the network and look for DDoS indicators. It currently detects only DNS and ICMP based attacks.
 
 # Install
 We strongly recommend the usage of pipenv. From the root project folder, run:
